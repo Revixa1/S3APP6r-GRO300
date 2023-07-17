@@ -4,7 +4,7 @@
 encodeur::encodeur()
 {
     LePlusBeauEncodeurDuMonde = new ArduinoX;
-    LePlusBeauEncodeurDuMonde->init();
+    //LePlusBeauEncodeurDuMonde->init();
 
 
 }

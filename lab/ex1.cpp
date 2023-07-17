@@ -7,10 +7,14 @@ namespace {
     int somme_;     // Contiendra la somme (devrait être 50005000).
 }
 
+std::mutex verrou;
+
 void accum(int d, int f)
 {
+ 	
     // Ajoute les nombres de d à f (inclusivement) à la variable somme_.
     for (int i = d; i <= f; ++i) {
+    const std::lock_guard<std::mutex> lock(verrou);
         somme_ += i;
     }
 }

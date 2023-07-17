@@ -72,7 +72,7 @@ void setup() {
   vexEncoder_.init(2,3);            // Initialisation de l'encodeur VEX
 
   // Attache de l'interruption pour encodeur vex
-  //attachInterrupt(vexEncoder_.getPinInt(), []{vexEncoder_.isr();}, FALLING);
+  attachInterrupt(vexEncoder_.getPinInt(), []{vexEncoder_.isr();}, FALLING);
   
   // Chronometre envoie message
   timerSendMsg_.setDelay(UPDATE_PERIODE);
@@ -94,7 +94,7 @@ void setup() {
 
 /* Boucle principale (infinie) */
 void loop() {
-  Serial.println("ok");
+
   if(shouldRead_){
     readMsg();
   }

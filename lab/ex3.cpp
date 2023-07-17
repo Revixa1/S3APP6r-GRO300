@@ -13,7 +13,6 @@ int main(int argc, char** argv)
     // Lorsque y == 0.0, on ajoute "!!!" à la fin de la ligne. 
     for (int i = 0; i < 101; ++i) {
         y = sin(x * M_PI);
-        y=truncf(y*10000)/10000;
 
         // Note: "%9f" indique qu'on souhaite avoir exactement 9 caractères
         // pour afficher la valeur, incluant les décimales et le signe.
@@ -21,7 +20,7 @@ int main(int argc, char** argv)
         // ajoute des espaces à gauche.
         // Ceci permet d'aligner visuellement les valeurs en colonnes.
         printf("x: %9f, sin(x * pi): %9f ", x, y);
-        if (y==0) {                           
+        if (y == 0.0) {                           
             printf("!!!");                        
         }                                         
         printf("\n");

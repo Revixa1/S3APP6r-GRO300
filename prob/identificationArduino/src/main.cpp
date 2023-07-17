@@ -9,7 +9,8 @@
 /*------------------------------ Librairies ---------------------------------*/
 #include <LibS3GRO.h>
 #include <ArduinoJson.h>
-#include <libExample.h> // Vos propres librairies
+#include <encodeur.h>
+//#include <libExample.h> // Vos propres librairies
 /*------------------------------ Constantes ---------------------------------*/
 
 #define BAUD            115200      // Frequence de transmission serielle
@@ -21,13 +22,17 @@
 #define PASPARTOUR      64          // Nombre de pas par tour du moteur
 #define RAPPORTVITESSE  50          // Rapport de vitesse du moteur
 
+
+
 /*---------------------------- Variables globales ---------------------------*/
 
 ArduinoX AX_;                       // Objet arduinoX
 MegaServo servo_;                   // Objet servomoteur
 VexQuadEncoder vexEncoder_;         // Objet encodeur vex
 IMU9DOF imu_;                       // Objet imu
-PID pid_;                           // Objet PID
+PID pid_;
+
+encodeur *EnCodeur=new encodeur;
 
 volatile bool shouldSend_ = false;  // Drapeau prêt à envoyer un message
 volatile bool shouldRead_ = false;  // Drapeau prêt à lire un message
@@ -209,11 +214,12 @@ void readMsg(){
 
 // Fonctions pour le PID
 double PIDmeasurement(){
-  // TODO
+
+	return EnCodeur->getPosition();
 }
 void PIDcommand(double cmd){
-  // TODO
+	AX_.setMotorPWM(0, cmd);
 }
 void PIDgoalReached(){
-  // TODO
+  AX_.setMotorPWM(0, 0);
 }

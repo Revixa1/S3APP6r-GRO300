@@ -49,6 +49,20 @@ float Axyz[3];                      // Tableau pour accelerometre
 float Gxyz[3];                      // Tableau pour giroscope
 float Mxyz[3];                      // Tableau pour magnetometre
 
+        double LiveTime = 0;
+        double PrevTime = 0;
+        double PrevPosition = 0;
+        double Position = 0;
+        double Vitesse = 0;
+        double PrevVitesse = 0;
+        double Acceleration = 0;
+
+        double R = 0.035;
+        double C = 3.1416*(2.00*R);
+        double Kg = 18.7500/2.00; 
+        double ppt = 64.00;
+        double dpp = C/(ppt*Kg);
+
 /*------------------------- Prototypes de fonctions -------------------------*/
 
 void timerCallback();
@@ -215,7 +229,27 @@ void readMsg(){
 // Fonctions pour le PID
 double PIDmeasurement(){
 
-	return EnCodeur->getVitesse();
+
+    
+
+	double millisecondes = millis();
+    LiveTime = millisecondes/1000.0;    
+    double DeltaTime = LiveTime - PrevTime;
+    if(DeltaTime > 0.01)
+    {
+        double PositionTemp = PrevPosition;
+        Position = AX_.readEncoder(0)*(dpp);
+        
+        PrevPosition = Position;
+
+        double DeltaPosition = Position - PositionTemp;
+ 
+        Vitesse = DeltaPosition / DeltaTime;
+
+        PrevTime = LiveTime;
+        PrevVitesse = Vitesse;
+    }
+    return Vitesse;
 }
 void PIDcommand(double cmd){
 	AX_.setMotorPWM(0, cmd);

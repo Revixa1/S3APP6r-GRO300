@@ -161,10 +161,11 @@ void sendMsg() {
   doc["potVex"] = analogRead(POTPIN);
   doc["encVex"] = vexEncoder_.getCount();
   doc["goal"] = pid_.getGoal();
-  doc["measurements"] = PIDmeasurement();
+  doc["cur_pos"]= Position;
+  doc["cur_vel"] = PIDmeasurement();
   doc["voltage"] = AX_.getVoltage();
   doc["current"] = AX_.getCurrent(); 
-  doc["pulsePWM"] = pulsePWM_;
+  doc["cmd"] = pulsePWM_;
   doc["pulseTime"] = pulseTime_;
   doc["inPulse"] = isInPulse_;
   doc["accelX"] = imu_.getAccelX();

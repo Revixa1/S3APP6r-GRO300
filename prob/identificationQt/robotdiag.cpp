@@ -14,12 +14,23 @@ std::mutex mtx;
 std::condition_variable cv;
 int var_i=0;
 
-RobotDiag::RobotDiag(){}
+RobotDiag::RobotDiag(){
+
+    // Démarre le simulateur:
+       // TODO: Supprimer cette ligne si vous testez avec un seul moteur
+       robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à
+                                         // simuler (8) et le délai moyen entre
+                                         // les événements (10 ms) plus ou moins
+                                         // un nombre aléatoire (3 ms).
+
+
+}
 
 
 // Le destructeur sera normalement appellé à la fermeture de l'application.
 // Écrit des statistiques à l'écran.
 RobotDiag::~RobotDiag() {
+    std::lock_guard<std::mutex> lock(mtx);
     stop_recording();
 }
 
@@ -31,7 +42,7 @@ void RobotDiag::push_event(RobotState new_robot_state) {
 
     // Ajoute le dernier événement à la file d'exportation
     queue_.push(new_robot_state);
-    var_i=1;
+    //var_i=1;
     cv.notify_one();
 
 }
@@ -45,13 +56,6 @@ void RobotDiag::start_recording() {
     // de la fermeture pour interrompre le fil d'exportation).
     run_ = true;
 
-    // Démarre le simulateur:
-    // TODO: Supprimer cette ligne si vous testez avec un seul moteur
-    //robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à
-                                      // simuler (8) et le délai moyen entre
-                                      // les événements (10 ms) plus ou moins
-                                      // un nombre aléatoire (3 ms).
-
     // TODO : Lancement du fil.
     thread_export_loop=std::thread(&RobotDiag::export_loop,this);
 }
@@ -59,6 +63,7 @@ void RobotDiag::start_recording() {
 void RobotDiag::stop_recording() {
     // Indique que le système de diagnostic doit être arrêté.
     run_ = false;
+    cv.notify_one();
 
     // TODO : Fermeture du fil.
     thread_export_loop.join();
@@ -84,21 +89,29 @@ void RobotDiag::export_loop() {
         return;
     }
 
+
     // En-tête du fichier CSV, respectez le format.
     fprintf(out, "motor_id;t;pos;vel;cmd\n");
 
     // TODO: Synchronisation et écriture.
-    auto i=data_.begin();
-    while(run_==true)
-    {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, []{return var_i==1;});
+    //auto i = data_.begin();
+       RobotState donnee;
+       while(run_==true)
+       {
+           //fprintf(out, "Avant\n");
+           std::unique_lock<std::mutex> lock(mtx);
+           //fprintf(out, "Apres");
+           cv.wait(lock);
 
-
-        fprintf(out,"%d;%f;%f;%f;%f\n",i->id,i->t,i->cur_pos,i->cur_vel,i->cur_cmd);
-
-        i++;
-    }
+           donnee = queue_.front();
+           if (donnee.id==3)
+           {
+           //donnee = queue_.front();
+           fprintf(out, "%d;%f;%f;%f;%f\n", donnee.id, donnee.t,donnee.cur_pos,donnee.cur_vel,donnee.cur_cmd);
+           }
+           queue_.pop();
+           //i++;
+       }
     
     fclose(out);
 }

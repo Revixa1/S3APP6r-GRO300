@@ -40,6 +40,8 @@ namespace {
             evt.id      = motor.id;
             evt.t       = t;
             evt.cur_pos = p;
+            evt.cur_cmd = 0.5;
+            evt.cur_vel = 1;
             diag_->push_event(evt);
 
             produced++;

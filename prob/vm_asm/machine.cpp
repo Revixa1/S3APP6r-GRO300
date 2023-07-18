@@ -2,13 +2,15 @@
 #include "vm.hpp"
 #include "ast.hpp"
 #include <cstdio>
+//#include <string>
 
 int main(int argc, char** argv)
 {
     using namespace vm;
 
     std::string fname;
-
+	//string fname;
+	
     // Chargement et compilation du code
     // Si on ne spécifie pas de fichier en argument, le programme compilera
     // l'entrée standard (donc ce qu'on entre au clavier puis termine avec

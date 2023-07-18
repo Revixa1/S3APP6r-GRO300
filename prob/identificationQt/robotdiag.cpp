@@ -9,8 +9,12 @@
 #include <condition_variable>
 
 using namespace s3gro;
+std::thread thread_export_loop;
+std::condition_variable cv;
+int var_i=0;
 
 RobotDiag::RobotDiag(){}
+
 
 // Le destructeur sera normalement appellé à la fermeture de l'application.
 // Écrit des statistiques à l'écran.
@@ -37,12 +41,13 @@ void RobotDiag::start_recording() {
 
     // Démarre le simulateur:
     // TODO: Supprimer cette ligne si vous testez avec un seul moteur
-    robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à 
+    //robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à
                                       // simuler (8) et le délai moyen entre
                                       // les événements (10 ms) plus ou moins
                                       // un nombre aléatoire (3 ms).
 
     // TODO : Lancement du fil.
+    thread_export_loop=std::thread(&RobotDiag::export_loop,this);
 }
 
 void RobotDiag::stop_recording() {
@@ -50,7 +55,7 @@ void RobotDiag::stop_recording() {
     run_ = false;
 
     // TODO : Fermeture du fil.
-
+    thread_export_loop.join();
     robotsim::stop_and_join();
 
     printf("Final vector size: %zu\n", data_.size());
@@ -60,6 +65,8 @@ void RobotDiag::stop_recording() {
 // Doit être exécutée dans un fil séparé et écrire dans le fichier CSV
 // lorsque de nouvelles données sont disponibles dans queue_.
 void RobotDiag::export_loop() {
+
+
     if (csv_filename_.empty()) {
         csv_filename_ = "/tmp/robotdiag.csv";
     }
@@ -75,6 +82,17 @@ void RobotDiag::export_loop() {
     fprintf(out, "motor_id;t;pos;vel;cmd\n");
 
     // TODO: Synchronisation et écriture.
+    auto i=data_.begin();
+    while(run_==true)
+    {
+        std::lock_guard<std::mutex> lock();
+        //cv.wait(lock, {return var_i==1});
+
+
+        fprintf(out,"%d;%f;%f;%f;%f\n",i->id,i->t,i->cur_pos,i->cur_vel,i->cur_cmd);
+
+        i++;
+    }
     
     fclose(out);
 }

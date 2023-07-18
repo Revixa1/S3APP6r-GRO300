@@ -215,7 +215,7 @@ void readMsg(){
 // Fonctions pour le PID
 double PIDmeasurement(){
 
-	return EnCodeur->getPosition();
+	return EnCodeur->getVitesse();
 }
 void PIDcommand(double cmd){
 	AX_.setMotorPWM(0, cmd);

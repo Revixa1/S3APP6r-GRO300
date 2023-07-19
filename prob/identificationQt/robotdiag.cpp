@@ -10,7 +10,9 @@
 
 std::thread thread_export_loop;
 std::mutex mtx;
+std::mutex mtx2;
 std::condition_variable cv;
+std::condition_variable cv2;
 int var_i=0;
 
 using namespace s3gro;
@@ -20,7 +22,7 @@ RobotDiag::RobotDiag(){
 
     // Démarre le simulateur:
        // TODO: Supprimer cette ligne si vous testez avec un seul moteur
-      // robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à
+      robotsim::init(this, 2, 100, 2);   // Spécifie le nombre de moteurs à
                                          // simuler (8) et le délai moyen entre
                                          // les événements (10 ms) plus ou moins
                                          // un nombre aléatoire (3 ms).
@@ -45,8 +47,10 @@ void RobotDiag::push_event(RobotState new_robot_state) {
     // Ajoute le dernier événement à la file d'exportation
     queue_.push(new_robot_state);
     //var_i=1;
-    cv.notify_one();
-    //std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    cv.notify_all();
+    //std::unique_lock<std::mutex> lock2(mtx2);
+    //cv2.wait_f(lock2,std::chrono::milliseconds(5),0);
+    //std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 }
 
@@ -66,7 +70,7 @@ void RobotDiag::start_recording() {
 void RobotDiag::stop_recording() {
     // Indique que le système de diagnostic doit être arrêté.
     run_ = false;
-    cv.notify_one();
+    cv.notify_all();
 
     // TODO : Fermeture du fil.
     thread_export_loop.join();
@@ -86,7 +90,7 @@ void RobotDiag::export_loop() {
     }
 
     FILE* out = fopen(csv_filename_.c_str(), "w");
-    FILE* out2 = fopen("/home/pi/Desktop/TXG.csv", "w");
+    //FILE* out2 = fopen("/home/pi/Desktop/TXG.csv", "w");
 
     if (out == NULL) {
         printf("ERROR: Cannot open output file.\n");
@@ -112,7 +116,9 @@ void RobotDiag::export_loop() {
            std::unique_lock<std::mutex> lock(mtx);
            //fprintf(out, "Apres");
            cv.wait(lock);
-
+           while(!queue_.empty())
+           //if(!queue_.empty())
+           {
            donnee = queue_.front();
 
            if (donnee.id==0)
@@ -121,7 +127,9 @@ void RobotDiag::export_loop() {
            fprintf(out, "%d;%f;%f;%f;%f\n", donnee.id, donnee.t,donnee.cur_pos,donnee.cur_vel,donnee.cur_cmd);
            }
            queue_.pop();
-           //i++;
+           //cv2.notify_all();
+           }
+
        }
     
 

@@ -38,15 +38,18 @@ RobotDiag::~RobotDiag() {
 
 void RobotDiag::push_event(RobotState new_robot_state) {
 
+
     std::lock_guard<std::mutex> lock(mtx);
     // Conserve toutes les données
     data_.push_back(new_robot_state);
 
+    if(run_){
+    
     // Ajoute le dernier événement à la file d'exportation
     queue_.push(new_robot_state);
 
     cv.notify_all();
-
+    }
 
 }
 

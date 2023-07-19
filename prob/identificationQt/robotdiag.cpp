@@ -8,17 +8,19 @@
 #include <mutex>
 #include <condition_variable>
 
-using namespace s3gro;
 std::thread thread_export_loop;
 std::mutex mtx;
 std::condition_variable cv;
 int var_i=0;
 
+using namespace s3gro;
+
+
 RobotDiag::RobotDiag(){
 
     // Démarre le simulateur:
        // TODO: Supprimer cette ligne si vous testez avec un seul moteur
-       robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à
+      // robotsim::init(this, 8, 10, 3);   // Spécifie le nombre de moteurs à
                                          // simuler (8) et le délai moyen entre
                                          // les événements (10 ms) plus ou moins
                                          // un nombre aléatoire (3 ms).
@@ -44,6 +46,7 @@ void RobotDiag::push_event(RobotState new_robot_state) {
     queue_.push(new_robot_state);
     //var_i=1;
     cv.notify_one();
+    //std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
 }
 
@@ -83,16 +86,23 @@ void RobotDiag::export_loop() {
     }
 
     FILE* out = fopen(csv_filename_.c_str(), "w");
+    FILE* out2 = fopen("/home/pi/Desktop/TXG.csv", "w");
 
     if (out == NULL) {
         printf("ERROR: Cannot open output file.\n");
         return;
     }
 
+   // if (out2 == NULL) {
+    //    printf("ERROR: Cannot open output file.\n");
+    //    return;
+   // }
+
+
 
     // En-tête du fichier CSV, respectez le format.
     fprintf(out, "motor_id;t;pos;vel;cmd\n");
-
+    //fprintf(out2, "motor_id;t;pos;vel;cmd\n");
     // TODO: Synchronisation et écriture.
     //auto i = data_.begin();
        RobotState donnee;
@@ -104,7 +114,8 @@ void RobotDiag::export_loop() {
            cv.wait(lock);
 
            donnee = queue_.front();
-           if (donnee.id==3)
+
+           if (donnee.id==0)
            {
            //donnee = queue_.front();
            fprintf(out, "%d;%f;%f;%f;%f\n", donnee.id, donnee.t,donnee.cur_pos,donnee.cur_vel,donnee.cur_cmd);
@@ -113,6 +124,17 @@ void RobotDiag::export_loop() {
            //i++;
        }
     
+
+      /* for(int i=0; i<(sizeof(data_)/sizeof(data_[0]));i++)
+       {
+           if (data_[i].id==2)
+           {
+           //donnee = queue_.front();
+           fprintf(out2, "%d;%f;%f;%f;%f\n", data_[i].id, data_[i].t,data_[i].cur_pos,data_[i].cur_vel,data_[i].cur_cmd);
+           }
+
+       }*/
     fclose(out);
+    //fclose(out2);
 }
 
